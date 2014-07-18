@@ -20,7 +20,6 @@
 
 package org.sonar.plugins.j3c.domain;
 
-import com.google.common.collect.Lists;
 import org.jacoco.core.analysis.IMethodCoverage;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +27,9 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static java.util.Arrays.asList;
+import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
+import static org.junit.Assert.assertThat;
 import static org.sonar.plugins.j3c.domain.MethodCoverageBuilder.DEFAULT_COMPLEXITY;
 import static org.sonar.plugins.j3c.domain.MethodCoverageBuilder.aMethodCoverage;
 
@@ -53,7 +55,7 @@ public class CoverageComplexityDataSetTest {
   @Test
   public void shouldComputeCorrectTheCoveragePercentage() {
 
-    DataPoint expected = new DataPoint(DEFAULT_COMPLEXITY, Lists.asList(66, new Integer[]{}));
+    DataPoint expected = new DataPoint(DEFAULT_COMPLEXITY, asList(new Integer[]{66}));
     IMethodCoverage mc = aMethodCoverage().build();
     sut.add(mc);
 
@@ -61,5 +63,26 @@ public class CoverageComplexityDataSetTest {
     DataPoint point = series.get(DEFAULT_COMPLEXITY);
 
     Assert.assertThat(point, DataPointMatcher.isSame(expected));
+  }
+
+  @Test
+  public void shouldBeWellFormedAsJSONRepresentationIfDataSetIsEmpty() {
+
+    String json = sut.serializeAsJson();
+
+    String expected = "[]";
+    assertThat(json, equalToIgnoringCase(expected));
+  }
+
+  @Test
+  public void shouldBeWellFormedAsJSONRepresentationIfCoveragesAreAdded() {
+
+    IMethodCoverage mc = aMethodCoverage().withComplexity(1).withCoverageRatio(0.667).build();
+    sut.add(mc);
+
+    String json = sut.serializeAsJson();
+
+    String expected = "[{\"cc\":0,\"co\":0,\"comp\":false},{\"cc\":1,\"co\":66,\"comp\":true}]";
+    assertThat(json, equalToIgnoringCase(expected));
   }
 }

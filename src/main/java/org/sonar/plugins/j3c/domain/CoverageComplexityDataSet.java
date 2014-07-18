@@ -20,6 +20,7 @@
 
 package org.sonar.plugins.j3c.domain;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Lists;
@@ -57,7 +58,8 @@ public class CoverageComplexityDataSet {
     return Integer.valueOf((int)(coverage.getComplexityCounter().getCoveredRatio() * 100));
   }
 
-  public List<DataPoint> getDataSet() {
+  @VisibleForTesting
+  List<DataPoint> getDataSet() {
 
     if(dataSet.isEmpty()) {
       return Collections.emptyList();
@@ -71,5 +73,18 @@ public class CoverageComplexityDataSet {
     }
 
     return series.build();
+  }
+
+  public String serializeAsJson() {
+    StringBuilder json = new StringBuilder();
+    json.append("[");
+    for(DataPoint dataPoint : getDataSet()) {
+      json.append(dataPoint.serializeAsJson()).append(",");
+    }
+    if(json.length() > 1) {
+      json.deleteCharAt(json.length() - 1);
+    }
+    json.append("]");
+    return json.toString();
   }
 }

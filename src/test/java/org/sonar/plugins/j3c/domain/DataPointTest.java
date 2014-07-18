@@ -71,7 +71,7 @@ public class DataPointTest {
   }
 
   @Test
-  public void shouldBeWellFormedAsJSONSerialization() {
+  public void shouldBeWellFormedAsJSONRepresentations() {
 
     DataPoint dataPoint = new DataPoint(10, asList(new Integer[]{75}));
     String actual = dataPoint.serializeAsJson();
