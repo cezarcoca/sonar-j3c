@@ -71,4 +71,14 @@ public class DataPoint {
     return new ToStringBuilder(this).append("complexity", complexity)
         .append("coverage", coverage).append("computed", computed).toString();
   }
+
+  public String serializeAsJson() {
+    StringBuilder json = new StringBuilder(40);
+    json.append("{");
+    json.append("\"cc\":").append(complexity);
+    json.append(",\"co\":").append(coverage);
+    json.append(",\"comp\":").append(computed);
+    json.append("}");
+    return json.toString();
+  }
 }

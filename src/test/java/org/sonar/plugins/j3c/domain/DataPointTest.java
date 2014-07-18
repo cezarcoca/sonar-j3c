@@ -20,12 +20,13 @@
 
 package org.sonar.plugins.j3c.domain;
 
-import com.google.common.collect.Lists;
 import edu.emory.mathcs.backport.java.util.Collections;
-import org.junit.Assert;
 import org.junit.Test;
 
+import static edu.emory.mathcs.backport.java.util.Arrays.asList;
+import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by ccoca
@@ -53,7 +54,7 @@ public class DataPointTest {
   @Test
   public void shouldComputeCorrectAverageWhenCoveragesListIsNotEmpty() {
 
-    DataPoint dataPoint = new DataPoint(10, Lists.asList(22, new Integer[]{33, 42}));
+    DataPoint dataPoint = new DataPoint(10, asList(new Integer[]{22, 33, 42}));
 
     assertEquals("Correct complexity", 10, dataPoint.getComplexity());
     assertEquals("Correct average is computed", 32, dataPoint.getCoverage());
@@ -63,9 +64,19 @@ public class DataPointTest {
   @Test
   public void shouldComputeCorrectAverageWhenAllCoveragesAreZero() {
 
-    DataPoint dataPoint = new DataPoint(10, Lists.asList(0, new Integer[]{0, 0}));
+    DataPoint dataPoint = new DataPoint(10, asList(new Integer[]{0, 0, 0}));
 
     assertEquals("Correct average is computed", 0, dataPoint.getCoverage());
     assertEquals("Computed flag is set accordingly", true, dataPoint.isComputed());
+  }
+
+  @Test
+  public void shouldBeWellFormedAsJSONSerialization() {
+
+    DataPoint dataPoint = new DataPoint(10, asList(new Integer[]{75}));
+    String actual = dataPoint.serializeAsJson();
+
+    String expected = "{\"cc\":10,\"co\":75,\"comp\":true}";
+    assertThat(actual, equalToIgnoringCase(expected));
   }
 }

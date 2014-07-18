@@ -30,6 +30,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.runtime.WildcardMatcher;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.component.ResourcePerspectives;
+import org.sonar.api.measures.Measure;
 import org.sonar.api.resources.Project;
 import org.sonar.api.resources.Resource;
 import org.sonar.api.resources.ResourceUtils;
@@ -38,11 +39,14 @@ import org.sonar.api.scan.filesystem.PathResolver;
 import org.sonar.api.utils.SonarException;
 import org.sonar.plugins.j3c.J3cConfiguration;
 import org.sonar.plugins.j3c.J3cLogger;
+import org.sonar.plugins.j3c.J3cMetrics;
 import org.sonar.plugins.j3c.domain.CoverageComplexityDataSet;
 import org.sonar.plugins.java.api.JavaResourceLocator;
 
 import java.io.File;
 import java.io.FileInputStream;
+
+import static org.sonar.plugins.j3c.J3cMetrics.J3C_DATA_SET;
 
 /**
  * Created by ccoca
@@ -134,6 +138,10 @@ public class JacocoAnalyzer {
       analyzeAll(analyzer, binaryDir);
     }
     return coverageBuilder;
+  }
+
+  private void saveMeasures(SensorContext context) {
+    context.saveMeasure(new Measure(J3C_DATA_SET, ""));
   }
 
   /**
