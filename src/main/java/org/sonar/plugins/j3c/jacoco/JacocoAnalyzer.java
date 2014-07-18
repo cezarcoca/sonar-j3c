@@ -96,6 +96,7 @@ public class JacocoAnalyzer {
           coverageComplexityDataSet.add(methodCoverage);
         }
       }
+      saveMeasures(context, coverageComplexityDataSet);
 
     } catch (Exception e) {
       throw new SonarException(e);
@@ -140,8 +141,8 @@ public class JacocoAnalyzer {
     return coverageBuilder;
   }
 
-  private void saveMeasures(SensorContext context) {
-    context.saveMeasure(new Measure(J3C_DATA_SET, ""));
+  private void saveMeasures(SensorContext context, CoverageComplexityDataSet dataSet) {
+    context.saveMeasure(new Measure(J3C_DATA_SET, dataSet.serializeAsJson()));
   }
 
   /**

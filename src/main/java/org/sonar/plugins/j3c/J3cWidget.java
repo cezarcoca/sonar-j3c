@@ -20,30 +20,33 @@
 
 package org.sonar.plugins.j3c;
 
-import com.google.common.collect.ImmutableList;
-import org.sonar.api.Extension;
-import org.sonar.api.SonarPlugin;
+import org.sonar.api.web.AbstractRubyTemplate;
+import org.sonar.api.web.RubyRailsWidget;
+import org.sonar.api.web.WidgetCategory;
 
-import java.util.ArrayList;
-import java.util.List;
+@WidgetCategory("Technical Debt")
+public class J3cWidget extends AbstractRubyTemplate implements RubyRailsWidget  {
 
-/**
- * Created by ccoca
- */
-public class J3cPlugin extends SonarPlugin {
-
-  public static final String PLUGIN_NAME = "Coverage Complexity Chart";
-  public static final String PLUGIN_KEY = "j3c-plugin";
-
-  @Override
-  public List<Class<? extends Extension>> getExtensions() {
-
-    ImmutableList.Builder<Class<? extends Extension>> extensions = ImmutableList.builder();
-    extensions.add(J3cConfiguration.class);
-    extensions.add(J3cSensor.class);
-    extensions.add(J3cWidget.class);
-    extensions.add(J3cMetrics.class);
-
-    return extensions.build();
+  /**
+   * @return the page id
+   */
+  public String getId() {
+    return J3cPlugin.PLUGIN_KEY;
   }
+
+  /**
+   * @return the page title
+   */
+  public String getTitle() {
+    return J3cPlugin.PLUGIN_NAME;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected String getTemplatePath() {
+    return "/j3c_page.html.erb";
+  }
+
 }
