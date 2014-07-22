@@ -39,7 +39,6 @@ public class DataPointTest {
     DataPoint dataPoint = new DataPoint(10, null);
 
     assertEquals("Correct average is computed", 0, dataPoint.getCoverage());
-    assertEquals("Computed flag is set accordingly", false, dataPoint.isComputed());
   }
 
   @Test
@@ -48,7 +47,6 @@ public class DataPointTest {
     DataPoint dataPoint = new DataPoint(10, Collections.emptyList());
 
     assertEquals("Correct average is computed", 0, dataPoint.getCoverage());
-    assertEquals("Computed flag is set accordingly", false, dataPoint.isComputed());
   }
 
   @Test
@@ -58,7 +56,6 @@ public class DataPointTest {
 
     assertEquals("Correct complexity", 10, dataPoint.getComplexity());
     assertEquals("Correct average is computed", 32, dataPoint.getCoverage());
-    assertEquals("Computed flag is set accordingly", true, dataPoint.isComputed());
   }
 
   @Test
@@ -67,7 +64,6 @@ public class DataPointTest {
     DataPoint dataPoint = new DataPoint(10, asList(new Integer[]{0, 0, 0}));
 
     assertEquals("Correct average is computed", 0, dataPoint.getCoverage());
-    assertEquals("Computed flag is set accordingly", true, dataPoint.isComputed());
   }
 
   @Test
@@ -76,7 +72,7 @@ public class DataPointTest {
     DataPoint dataPoint = new DataPoint(10, asList(new Integer[]{75}));
     String actual = dataPoint.serializeAsJson();
 
-    String expected = "{\"cc\":10,\"co\":75,\"comp\":true}";
+    String expected = "{\"cc\":10,\"co\":75}";
     assertThat(actual, equalToIgnoringCase(expected));
   }
 }

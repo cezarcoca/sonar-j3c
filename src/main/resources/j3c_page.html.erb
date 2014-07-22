@@ -4,12 +4,10 @@
   if !@snapshot.nil? && @snapshot.measure('j3c_data_set')
     metric_ref = metric('j3c_data_set')
     measure_ref = measure('j3c_data_set')
-%>
-<%
-puts measure_ref.data.to_s
+	j3c_json_obj = measure_ref.data.to_json
+	puts measure_ref.data.to_s;
 %>
 <style>
-
 .axis text {
   font: 10px sans-serif;
 }
@@ -22,12 +20,17 @@ puts measure_ref.data.to_s
 }
 
 .bar {
-  fill: steelblue;
-  fill-opacity: .9;
+  fill: green;
+  fill-opacity: 1.0;
 }
 
-.x.axis path {
-  display: none;
+.crapThreshold {
+  fill: red;
+  fill-opacity: 1.0;
+}
+
+.thresholdBackground {
+  fill:rgb(250,250,210);
 }
 
 label {
@@ -35,23 +38,39 @@ label {
   top: 10px;
   right: 10px;
 }
+
+.vlines, .hlines{
+	stroke:rgb(150,148,109);
+	shape-rendering:crispEdges;
+	stroke-width:1px;
+	stroke-opacity:0.3;
+}
 </style>
-<div id="j3c_chart">
+<div id="j3c_chart" style="text-align:center;">
 </div>
 <script language="javascript">
   (function () {
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 40};
+    // read J3C data set
+    var jsonObject = <%= j3c_json_obj -%>;
+    var j3cDataSet = JSON.parse(jsonObject);
+    var max_cc = j3cDataSet.max_cc;
+    var data = j3cDataSet.data;
+    var maxX = max_cc + 1;
+
+    // setup bounds
+    var margin = {top: 20, right: 20, bottom: 40, left: 40};
     var width = 500 - margin.left - margin.right;
-    var height = 270 - margin.top - margin.bottom;
+    var height = 320 - margin.top - margin.bottom;
+	
+    var barWidth = Math.max(width / maxX - 2, 1);
 
-    var formatPercent = d3.format(".0%");
+    var x = d3.scale.linear().domain([0, maxX]).rangeRound([0, width]);
+    var y = d3.scale.linear().domain([0, 100]).range([height, 0]);
 
-    var x = d3.scale.ordinal().rangeRoundBands([0, width], .1, 1);
-    var y = d3.scale.linear().range([height, 0]);
-
+    // define scale functions that map from the input domain to the output range
     var xAxis = d3.svg.axis().scale(x).orient("bottom");
-    var yAxis = d3.svg.axis().scale(y).orient("left").tickFormat(formatPercent);
+    var yAxis = d3.svg.axis().scale(y).orient("left");
 
     var svg = d3.select("#j3c_chart").append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -59,22 +78,75 @@ label {
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
+	var ccThresholds = [5, 10, 15, 20, 25];
 
+  var threshold = d3.scale.threshold()
+  	.domain([ccThresholds[0] + 1, ccThresholds[1] + 1, ccThresholds[2] + 1, ccThresholds[3] + 1, ccThresholds[4] + 1])
+  	.range([0, 42, 57, 71, 80, 100]);
+
+  for(var i = 0; i < ccThresholds.length; i++) {
+  	if(ccThresholds[i] < maxX) {
+  		var cc=ccThresholds[i];
+  		svg.append("rect").attr("x",x(cc)).attr("y",y(threshold(cc + 1))).attr("width",width - x(cc)).attr("height",height - y(threshold(cc + 1))).attr("class", "thresholdBackground");
+  	}
+  }
+
+	// draw vertical lines of the grid.
+  svg.selectAll(".vlines").data(x.ticks(10)).enter().append("line").attr("class","vlines")
+  	.attr("x1",function(d){ return x(d);}).attr("y1",0)
+  	.attr("x2", function(d){ return x(d);}).attr("y2",height);
+
+  // draw horizontal lines of the grid.
+  svg.selectAll(".hlines").data(y.ticks(10)).enter().append("line").attr("class","hlines")
+  	.attr("x1",0).attr("y1",function(d){ return y(d);})
+  	.attr("x2", width).attr("y2",function(d){ return y(d);});
+
+  // draw last right vertical grid line
+	svg.append("line").attr("class","vlines").attr("x1",width).attr("y1",0).attr("x2", width).attr("y2",height);
+
+    // draw X axis
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+      .append("text")
+        .attr("y", 25)
+    		.attr("x", width)
+    		.attr("dy", ".71em")
+    		.style("text-anchor", "end")
+    		.text("Complexity");
+
+    // draw Y axis
     svg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
       .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
+        .attr("x", 0)
+        .attr("y", -17)
         .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Coverage");
+        .style("text-anchor", "middle")
+        .text("Coverage (%)");
+		  
+	  var threshold = d3.scale.threshold().domain([6, 11, 16, 21, 26]).range([0, 42, 57, 71, 80, 100]);
 
-    var JSONData = <%= measure_ref.data.to_s -%>;
+    svg.selectAll(".crapThreshold")
+          .data(data)
+        .enter().append("rect")
+          .attr("class", "crapThreshold")
+          .attr("x", function(d) { return x(d.cc) - barWidth / 2;})
+          .attr("width", barWidth - 1)
+          .attr("y", function(d) { return y(threshold(d.cc)); })
+          .attr("height", function(d) { return Math.max((y(d.co) - y(threshold(d.cc))), 0); });
+		  
+    svg.selectAll(".bar")
+          .data(data)
+        .enter().append("rect")
+          .attr("class", "bar")
+          .attr("x", function(d) { return x(d.cc) - barWidth / 2;})
+          .attr("width", barWidth - 1)
+          .attr("y", function(d) { return y(d.co); })
+          .attr("height", function(d) { return height - y(d.co); });
+
   })();
 </script>
 <%

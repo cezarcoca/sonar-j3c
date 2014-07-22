@@ -20,13 +20,14 @@
 
 package org.sonar.plugins.j3c.domain;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.jacoco.core.analysis.IMethodCoverage;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ccoca
@@ -36,7 +37,7 @@ public class CoverageComplexityDataSet {
   private Map<Integer, List<Integer>> dataSet;
 
   public CoverageComplexityDataSet() {
-    this.dataSet = Maps.newHashMap();
+    this.dataSet = Maps.newTreeMap();
   }
 
   public void add(IMethodCoverage coverage) {
@@ -58,8 +59,7 @@ public class CoverageComplexityDataSet {
     return Integer.valueOf((int)(coverage.getComplexityCounter().getCoveredRatio() * 100));
   }
 
-  @VisibleForTesting
-  List<DataPoint> getDataSet() {
+  private List<DataPoint> getDataSet() {
 
     if(dataSet.isEmpty()) {
       return Collections.emptyList();
@@ -67,24 +67,35 @@ public class CoverageComplexityDataSet {
 
     ImmutableList.Builder<DataPoint> series = ImmutableList.builder();
 
-    Integer maxComplexity = Collections.max(dataSet.keySet());
-    for(int i = 0; i <= maxComplexity; i++) {
-      series.add(new DataPoint(i, dataSet.get(i)));
+    for(Map.Entry<Integer, List<Integer>> entry : dataSet.entrySet()) {
+      series.add(new DataPoint(entry.getKey(), entry.getValue()));
     }
 
     return series.build();
   }
 
+  private Integer getMaxCyclomaticComplexity() {
+    if(dataSet.isEmpty()) {
+      return 0;
+    }
+
+    return Collections.max(dataSet.keySet());
+  }
+
   public String serializeAsJson() {
     StringBuilder json = new StringBuilder();
-    json.append("[");
-    for(DataPoint dataPoint : getDataSet()) {
+    json.append("{");
+    json.append("\"max_cc\":").append(getMaxCyclomaticComplexity());
+    json.append(",\"data\":[");
+    List<DataPoint> points = getDataSet();
+    for(DataPoint dataPoint : points) {
       json.append(dataPoint.serializeAsJson()).append(",");
     }
-    if(json.length() > 1) {
+    if(!points.isEmpty()) {
       json.deleteCharAt(json.length() - 1);
     }
     json.append("]");
+    json.append("}");
     return json.toString();
   }
 }

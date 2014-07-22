@@ -29,7 +29,6 @@ import org.jacoco.core.data.ExecutionDataReader;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.runtime.WildcardMatcher;
 import org.sonar.api.batch.SensorContext;
-import org.sonar.api.component.ResourcePerspectives;
 import org.sonar.api.measures.Measure;
 import org.sonar.api.resources.Project;
 import org.sonar.api.resources.Resource;
@@ -39,12 +38,12 @@ import org.sonar.api.scan.filesystem.PathResolver;
 import org.sonar.api.utils.SonarException;
 import org.sonar.plugins.j3c.J3cConfiguration;
 import org.sonar.plugins.j3c.J3cLogger;
-import org.sonar.plugins.j3c.J3cMetrics;
 import org.sonar.plugins.j3c.domain.CoverageComplexityDataSet;
 import org.sonar.plugins.java.api.JavaResourceLocator;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 
 import static org.sonar.plugins.j3c.J3cMetrics.J3C_DATA_SET;
 
@@ -53,15 +52,13 @@ import static org.sonar.plugins.j3c.J3cMetrics.J3C_DATA_SET;
  */
 public class JacocoAnalyzer {
 
-  private final ResourcePerspectives perspectives;
   private final ModuleFileSystem fileSystem;
   private final PathResolver pathResolver;
   private final J3cConfiguration configuration;
   private final JavaResourceLocator javaResourceLocator;
   private final WildcardMatcher excludesMatcher;
 
-  public JacocoAnalyzer(ResourcePerspectives perspectives, ModuleFileSystem fileSystem, PathResolver pathResolver, J3cConfiguration configuration, JavaResourceLocator javaResourceLocator) {
-    this.perspectives = perspectives;
+  public JacocoAnalyzer(ModuleFileSystem fileSystem, PathResolver pathResolver, J3cConfiguration configuration, JavaResourceLocator javaResourceLocator) {
     this.fileSystem = fileSystem;
     this.pathResolver = pathResolver;
     this.configuration = configuration;
@@ -69,25 +66,20 @@ public class JacocoAnalyzer {
     this.excludesMatcher = new WildcardMatcher(Strings.nullToEmpty(configuration.getExcludes()));
   }
 
-  public final void analyse(Project project, SensorContext context) {
+  public final void analyse(SensorContext context) {
 
-    if (!atLeastOneBinaryDirectoryExists()) {
+    if (noBinaryDirectoryFound()) {
       J3cLogger.LOGGER.info("No JaCoCo analysis of project coverage can be done since there is no directories with classes.");
       return;
     }
 
-    File jacocoExecutionData = pathResolver.relativeFile(fileSystem.baseDir(), getReportPath(project));
+    File jacocoExecutionData = pathResolver.relativeFile(fileSystem.baseDir(), configuration.getReportPath());
 
     try {
-      ExecutionDataReader reader = new ExecutionDataReader(new FileInputStream(jacocoExecutionData));
-      ExecutionDataVisitor visitor = new ExecutionDataVisitor();
-      reader.setSessionInfoVisitor(visitor);
-      reader.setExecutionDataVisitor(visitor);
-      reader.read();
+      ExecutionDataStore mergedResults = parseExecutionData(jacocoExecutionData);
+      CoverageBuilder coverageBuilder = analyze(mergedResults);
 
       CoverageComplexityDataSet coverageComplexityDataSet = new CoverageComplexityDataSet();
-      CoverageBuilder coverageBuilder = analyze(visitor.getMerged());
-
       for (IClassCoverage classCoverage : coverageBuilder.getClasses()) {
         if (isExcluded(classCoverage) || isNotInScope(classCoverage, context)) {
           continue;
@@ -99,8 +91,20 @@ public class JacocoAnalyzer {
       saveMeasures(context, coverageComplexityDataSet);
 
     } catch (Exception e) {
+      J3cLogger.LOGGER.error(e.getMessage(), e);
       throw new SonarException(e);
     }
+  }
+
+  private ExecutionDataStore parseExecutionData(File jacocoExecutionData) throws IOException {
+
+    ExecutionDataReader reader = new ExecutionDataReader(new FileInputStream(jacocoExecutionData));
+    ExecutionDataVisitor visitor = new ExecutionDataVisitor();
+    reader.setSessionInfoVisitor(visitor);
+    reader.setExecutionDataVisitor(visitor);
+    reader.read();
+
+    return visitor.getMerged();
   }
 
   private boolean isExcluded(IClassCoverage coverage) {
@@ -119,17 +123,13 @@ public class JacocoAnalyzer {
     return false;
   }
 
-  protected String getReportPath(Project project) {
-    return configuration.getReportPath();
-  }
-
-  private boolean atLeastOneBinaryDirectoryExists() {
+  private boolean noBinaryDirectoryFound() {
     for (File binaryDir : fileSystem.binaryDirs()) {
       if (binaryDir.exists()) {
-        return true;
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   private CoverageBuilder analyze(ExecutionDataStore executionDataStore) {
@@ -149,7 +149,6 @@ public class JacocoAnalyzer {
    * Copied from {@link Analyzer#analyzeAll(File)} in order to add logging.
    */
   private void analyzeAll(Analyzer analyzer, File file) {
-    System.out.println("Analyze file: " + file.getName());
     if (file.isDirectory()) {
       for (File f : file.listFiles()) {
         analyzeAll(analyzer, f);

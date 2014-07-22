@@ -38,15 +38,12 @@ public class DataPointMatcher extends TypeSafeMatcher<DataPoint> {
   @Override
   public boolean matchesSafely(DataPoint actual) {
     return actual.getComplexity() == expected.getComplexity()
-        && actual.getCoverage() == expected.getCoverage()
-        && actual.isComputed() == expected.isComputed();
+        && actual.getCoverage() == expected.getCoverage();
   }
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("complexity: " + expected.getComplexity()
-        + " coverage: " + expected.getCoverage()
-        + " computed: " + expected.isComputed());
+    description.appendText(expected.toString());
   }
 
   public static Matcher<DataPoint> isSame(DataPoint expected) {

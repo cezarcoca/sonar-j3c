@@ -23,16 +23,11 @@ package org.sonar.plugins.j3c;
 import org.sonar.api.batch.DependsUpon;
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
-import org.sonar.api.component.ResourcePerspectives;
 import org.sonar.api.resources.Project;
 import org.sonar.api.scan.filesystem.ModuleFileSystem;
 import org.sonar.api.scan.filesystem.PathResolver;
-import org.sonar.plugins.j3c.J3cConfiguration;
-import org.sonar.plugins.j3c.J3cLogger;
 import org.sonar.plugins.j3c.jacoco.JacocoAnalyzer;
 import org.sonar.plugins.java.api.JavaResourceLocator;
-
-import java.io.File;
 
 /**
  * Created by ccoca
@@ -40,15 +35,12 @@ import java.io.File;
 public class J3cSensor implements Sensor {
 
   private final J3cConfiguration configuration;
-  private final ResourcePerspectives perspectives;
   private final ModuleFileSystem fileSystem;
   private final PathResolver pathResolver;
   private final JavaResourceLocator javaResourceLocator;
 
-  public J3cSensor(J3cConfiguration configuration, ResourcePerspectives perspectives, ModuleFileSystem fileSystem, PathResolver pathResolver, JavaResourceLocator javaResourceLocator) {
-    J3cLogger.LOGGER.info("J3cSensor ...");
+  public J3cSensor(J3cConfiguration configuration, ModuleFileSystem fileSystem, PathResolver pathResolver, JavaResourceLocator javaResourceLocator) {
     this.configuration = configuration;
-    this.perspectives = perspectives;
     this.fileSystem = fileSystem;
     this.pathResolver = pathResolver;
     this.javaResourceLocator = javaResourceLocator;
@@ -64,8 +56,8 @@ public class J3cSensor implements Sensor {
 
   @Override
   public void analyse(Project module, SensorContext context) {
-    JacocoAnalyzer analyzer = new JacocoAnalyzer(perspectives, fileSystem, pathResolver, configuration, javaResourceLocator);
-    analyzer.analyse(module, context);
+    JacocoAnalyzer analyzer = new JacocoAnalyzer(fileSystem, pathResolver, configuration, javaResourceLocator);
+    analyzer.analyse(context);
   }
 
   @Override

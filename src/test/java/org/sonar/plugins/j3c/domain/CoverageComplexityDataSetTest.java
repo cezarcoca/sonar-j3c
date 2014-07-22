@@ -20,17 +20,11 @@
 
 package org.sonar.plugins.j3c.domain;
 
-import org.jacoco.core.analysis.IMethodCoverage;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
-import static java.util.Arrays.asList;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.junit.Assert.assertThat;
-import static org.sonar.plugins.j3c.domain.MethodCoverageBuilder.DEFAULT_COMPLEXITY;
 import static org.sonar.plugins.j3c.domain.MethodCoverageBuilder.aMethodCoverage;
 
 /**
@@ -46,43 +40,36 @@ public class CoverageComplexityDataSetTest {
   }
 
   @Test
-  public void shouldReturnEmptyListWhenNoCoveragesWereAdded() {
-    List<DataPoint> series = sut.getDataSet();
-
-    Assert.assertTrue("Series is empty", series.isEmpty());
-  }
-
-  @Test
-  public void shouldComputeCorrectTheCoveragePercentage() {
-
-    DataPoint expected = new DataPoint(DEFAULT_COMPLEXITY, asList(new Integer[]{66}));
-    IMethodCoverage mc = aMethodCoverage().build();
-    sut.add(mc);
-
-    List<DataPoint> series = sut.getDataSet();
-    DataPoint point = series.get(DEFAULT_COMPLEXITY);
-
-    Assert.assertThat(point, DataPointMatcher.isSame(expected));
-  }
-
-  @Test
-  public void shouldBeWellFormedAsJSONRepresentationIfDataSetIsEmpty() {
+  public void shouldHandleNoCoveragesCornerCase() {
 
     String json = sut.serializeAsJson();
 
-    String expected = "[]";
+    String expected = "{\"max_cc\":0,\"data\":[]}";
     assertThat(json, equalToIgnoringCase(expected));
   }
 
   @Test
-  public void shouldBeWellFormedAsJSONRepresentationIfCoveragesAreAdded() {
+  public void shouldComputeAverageCoverageForMethodsWithTheSameComplexity() {
 
-    IMethodCoverage mc = aMethodCoverage().withComplexity(1).withCoverageRatio(0.667).build();
-    sut.add(mc);
+    final int complexity = 10;
+    sut.add(aMethodCoverage().withComplexity(complexity).withCoverageRatio(0.33).build());
+    sut.add(aMethodCoverage().withComplexity(complexity).withCoverageRatio(0.66).build());
 
     String json = sut.serializeAsJson();
 
-    String expected = "[{\"cc\":0,\"co\":0,\"comp\":false},{\"cc\":1,\"co\":66,\"comp\":true}]";
+    String expected = "{\"max_cc\":" + complexity + ",\"data\":[{\"cc\":" + complexity + ",\"co\":" + 49 + "}]}";
+    assertThat(json, equalToIgnoringCase(expected));
+  }
+
+  @Test
+  public void shouldBeSortedByCyclomaticComplexity() {
+
+    sut.add(aMethodCoverage().withComplexity(10).withCoverageRatio(0.33).build());
+    sut.add(aMethodCoverage().withComplexity(1).withCoverageRatio(0.66).build());
+
+    String json = sut.serializeAsJson();
+
+    String expected = "{\"max_cc\":10,\"data\":[{\"cc\":1,\"co\":66},{\"cc\":10,\"co\":33}]}";
     assertThat(json, equalToIgnoringCase(expected));
   }
 }

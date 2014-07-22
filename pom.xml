@@ -20,7 +20,8 @@
     <url>http://docs.codehaus.org/display/SONAR/Coverage+Complexity+Chart+Plugin</url>
     <inceptionYear>2014</inceptionYear>
     <organization>
-        <name>Cezar Coca</name>
+        <name>Endava</name>
+        <url>http://www.endava.com/</url>
     </organization>
     <licenses>
         <license>
@@ -44,7 +45,7 @@
 
     <properties>
         <sonar.version>4.3</sonar.version>
-        <sonar.java.version>2.1</sonar.java.version>
+        <sonar-plugins.java.version>2.1</sonar-plugins.java.version>
         <sonar.pluginName>Coverage Complexity Chart</sonar.pluginName>
         <sonar.pluginClass>org.sonar.plugins.j3c.J3cPlugin</sonar.pluginClass>
         <jacoco.version>0.7.0.201403182114</jacoco.version>
@@ -69,33 +70,14 @@
         </dependency>
         <dependency>
             <groupId>org.codehaus.sonar-plugins.java</groupId>
-            <artifactId>java-squid</artifactId>
-            <version>2.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.sonar-plugins.java</groupId>
             <artifactId>sonar-java-plugin</artifactId>
-            <version>2.1</version>
+            <version>${sonar-plugins.java.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
             <version>3.2.1</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.sonar</groupId>
-            <artifactId>sonar-batch</artifactId>
-            <version>4.3.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.sonar-plugins.java</groupId>
-            <artifactId>sonar-jacoco-plugin</artifactId>
-            <version>2.1</version>
             <scope>provided</scope>
         </dependency>
 

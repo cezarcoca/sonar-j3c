@@ -31,7 +31,6 @@ public class DataPoint {
 
   private int complexity;
   private int coverage;
-  private boolean computed;
 
   public DataPoint(Integer complexity, List<Integer> coverages) {
     this.complexity = complexity;
@@ -41,7 +40,6 @@ public class DataPoint {
   private void computeAverageCoverage(List<Integer> coverages) {
 
     if(coverages == null || coverages.isEmpty()) {
-      computed = false;
       coverage = 0;
       return;
     }
@@ -51,7 +49,6 @@ public class DataPoint {
       total += value;
     }
     coverage = total / coverages.size();
-    computed = true;
   }
 
   public int getComplexity() {
@@ -62,14 +59,9 @@ public class DataPoint {
     return coverage;
   }
 
-  public boolean isComputed() {
-    return computed;
-  }
-
   @Override
   public String toString() {
-    return new ToStringBuilder(this).append("complexity", complexity)
-        .append("coverage", coverage).append("computed", computed).toString();
+    return serializeAsJson();
   }
 
   public String serializeAsJson() {
@@ -77,7 +69,6 @@ public class DataPoint {
     json.append("{");
     json.append("\"cc\":").append(complexity);
     json.append(",\"co\":").append(coverage);
-    json.append(",\"comp\":").append(computed);
     json.append("}");
     return json.toString();
   }
