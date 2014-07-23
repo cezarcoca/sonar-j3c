@@ -2,7 +2,7 @@
 
 **Coverage Complexity Chart** - Sonar Plugin
 
-The **J3C Sonar Plugin** is a visualization technique that is useful to quick get an idea of how difficult is it to change / maintain your code. It combines the *Cyclomatic Complexity* and cod *Coverage* from automated tests and reveals if the code contains high risk to change methods. This plugin is inspired from [crap4j](http://www.crap4j.org/faq.html "crap4j") project and use the same heuristic Complexity / Coverage Thresholds in order to interpret and render the results.
+The **J3C Sonar Plugin** is a visualization technique that is useful to quickly get an idea of how difficult it is to change / maintain your code. It combines the *Cyclomatic Complexity* and code *Coverage* from automated tests and reveals if the code contains high risk to change methods. This plugin is inspired from [crap4j](http://www.crap4j.org/faq.html "crap4j") project and use the same heuristic Complexity / Coverage Thresholds in order to interpret and render the results.
 
 | Complexity    | Coverage %  |
 | ------------- |-------------|
@@ -22,7 +22,7 @@ The both Coverage and Complexity metrics can spot the code that is associated wi
 
 ![Coverage Complexity Chart](https://drive.google.com/uc?id=0B9tMA3RbZ5P_TXZaRTNUOFNybGM)
 
-The **J3C Sonar Plugin** leverages [JaCoCo](http://www.eclemma.org/jacoco/trunk/index.html) library to analyze and extract methods coverage and complexity metrics (more details [here](http://www.eclemma.org/jacoco/trunk/doc/counters.html)), groups methods by complexity, computes the average coverage and aggregate the results as an bar chart.
+The **J3C Sonar Plugin** leverages [JaCoCo](http://www.eclemma.org/jacoco/trunk/index.html) library to analyze and extract methods coverage and complexity metrics (more details [here](http://www.eclemma.org/jacoco/trunk/doc/counters.html)), groups methods by complexity, computes the average coverage and aggregates the results as an bar chart.
 
 The key elements in the chart above are:
 
