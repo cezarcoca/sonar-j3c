@@ -75,6 +75,11 @@ public class JacocoAnalyzer {
 
     File jacocoExecutionData = pathResolver.relativeFile(fileSystem.baseDir(), configuration.getReportPath());
 
+    if(noCoverageReportFound(jacocoExecutionData)) {
+      J3cLogger.LOGGER.info("No JaCoCo analysis of project coverage found at: " + jacocoExecutionData.getPath());
+      return;
+    }
+
     try {
       ExecutionDataStore mergedResults = parseExecutionData(jacocoExecutionData);
       CoverageBuilder coverageBuilder = analyze(mergedResults);
@@ -130,6 +135,10 @@ public class JacocoAnalyzer {
       }
     }
     return true;
+  }
+
+  private boolean noCoverageReportFound(File path) {
+    return !path.exists() || !path.isFile();
   }
 
   private CoverageBuilder analyze(ExecutionDataStore executionDataStore) {

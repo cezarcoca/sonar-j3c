@@ -58,7 +58,20 @@ Run the build script:
 **Installation**
 
 1. Copy the plugin into the *SONARQUBE_HOME/extensions/plugins directory*
-2. Restart the **SonarQube** server (version 4.3+)
+2. Restart the [SonarQube](http://docs.codehaus.org/display/SONAR/Documentation) server (version **4.3+**)
+
+**Usage**
+
+To launch [JaCoCo](http://www.eclemma.org/jacoco/trunk/index.html) as part of your Maven build and generate the *jacoco.exec* execution data file, use this command
+
+    mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install
+
+To feed [SonarQube](http://docs.codehaus.org/display/SONAR/Documentation) with code coverage data, use this command
+
+    mvn sonar:sonar
+
+For more information about how to configure [SonarQube](http://docs.codehaus.org/display/SONAR/Documentation) and [JaCoCo](http://www.eclemma.org/jacoco/trunk/index.html) see [this documentation](http://docs.codehaus.org/display/SONAR/JaCoCo+Plugin)
+
 
 
 
