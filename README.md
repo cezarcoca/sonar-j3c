@@ -66,7 +66,7 @@ To launch [JaCoCo](http://www.eclemma.org/jacoco/trunk/index.html) as part of yo
 
     mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install
 
-To feed [SonarQube](http://docs.codehaus.org/display/SONAR/Documentation) with code coverage data, use this command
+To feed [SonarQube](http://docs.codehaus.org/display/SONAR/Documentation) with code coverage data, use below command
 
     mvn sonar:sonar
 
